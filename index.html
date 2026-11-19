@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#041a5c">
+<title>Henrique 4 Anos – Convite</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    height: 100%; width: 100%; overflow: hidden;
+    background: #020b2e; touch-action: manipulation;
+    user-select: none; -webkit-user-select: none;
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  }
+
+  .screen {
+    position: fixed; inset: 0; display: none;
+    align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at center, #0a2a8a 0%, #020b2e 75%);
+  }
+  .screen.active { display: flex; }
+
+  /* ---------- VÍDEO ---------- */
+  #screen-video { background: #000; }
+  #video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+
+  .skip {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 22px);
+    padding: 8px 20px;
+    font-size: 11px; font-weight: 500; letter-spacing: .28em;
+    color: rgba(255,255,255,.78);
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.28);
+    border-radius: 999px;
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    cursor: pointer; opacity: 0; pointer-events: none;
+    transition: opacity .8s ease, background .2s ease;
+    white-space: nowrap; z-index: 5; font-family: inherit;
+  }
+  .skip.show { opacity: 1; pointer-events: auto; }
+  .skip:active { background: rgba(255,255,255,.2); }
+
+  .hint {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 26px);
+    font-size: 11px; letter-spacing: .3em; color: rgba(255,255,255,.75);
+    text-shadow: 0 1px 8px rgba(0,0,0,.7);
+    animation: pulse 2.2s ease-in-out infinite; white-space: nowrap;
+    pointer-events: none; z-index: 4; transition: opacity .5s;
+  }
+  .hint.hide { opacity: 0; animation: none; }
+  @keyframes pulse { 0%,100% { opacity: .35; } 50% { opacity: 1; } }
+
+  /* ---------- PÁGINAS DE IMAGEM ---------- */
+  .stage {
+    position: relative;
+    width: min(100vw, calc(100dvh * 941 / 1672));
+    aspect-ratio: 941 / 1672;
+  }
+  .stage.presentes {
+    width: min(100vw, calc(100dvh * 900 / 1599));
+    aspect-ratio: 900 / 1599;
+  }
+  .stage img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    display: block; pointer-events: none; -webkit-user-drag: none;
+  }
+  .hot {
+    position: absolute; display: block; border-radius: 999px;
+    cursor: pointer; text-decoration: none; outline: none;
+    transition: background .15s, box-shadow .15s;
+  }
+  .hot:active, .hot:focus-visible {
+    background: rgba(255, 215, 80, .22);
+    box-shadow: 0 0 22px 6px rgba(255, 200, 40, .55);
+  }
+
+  /* posições dos botões (em % da imagem) – interativo.jpg 941×1672 */
+  #b-confirmar  { left: 6.4%;  top: 75.2%; width: 27.6%; height: 14.2%; border-radius: 22px; }
+  #b-local      { left: 37.2%; top: 75.2%; width: 25.8%; height: 14.2%; border-radius: 22px; }
+  #b-presente   { left: 66.4%; top: 75.2%; width: 27.6%; height: 14.2%; border-radius: 22px; }
+  #b-voltar-1   { left: 33%;   top: 91.0%; width: 34%;   height: 4.4%; }
+  /* presentes.jpg 900×1599 */
+  #b-voltar-2   { left: 28.2%; top: 91.9%; width: 43.5%; height: 5.0%; }
+
+  /* ---------- EFEITO: ANÉIS DOURADOS + FUMAÇA AZUL ---------- */
+  #fx {
+    position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+    overflow: hidden; perspective: 700px;
+  }
+  .ring {
+    position: absolute; border-radius: 50%;
+    background: conic-gradient(from 20deg, #fff7b0, #ffd21f, #c98500, #ffe35c, #f2a900, #fff1a0, #b97800, #ffd21f, #fff7b0);
+    -webkit-mask: radial-gradient(circle, transparent 54%, #000 57%);
+            mask: radial-gradient(circle, transparent 54%, #000 57%);
+    filter: drop-shadow(0 0 6px rgba(255, 210, 60, .9));
+    will-change: transform, opacity;
+  }
+  .smoke {
+    position: absolute; border-radius: 50%;
+    background: radial-gradient(circle, rgba(90,170,255,.65) 0%, rgba(35,100,240,.35) 42%, rgba(10,50,200,0) 70%);
+    filter: blur(9px); mix-blend-mode: screen;
+    will-change: transform, opacity;
+  }
+  .spark {
+    position: absolute; width: 6px; height: 6px; border-radius: 50%;
+    background: radial-gradient(circle, #fff, #ffe066 55%, transparent 70%);
+    will-change: transform, opacity;
+  }
+</style>
+</head>
+<body>
+
+<!-- 1) VÍDEO -->
+<section id="screen-video" class="screen active">
+  <video id="video" src="video.mp4#t=0.1" playsinline webkit-playsinline preload="auto"></video>
+  <div id="hint" class="hint">TOQUE PARA COMEÇAR</div>
+  <button id="skip" class="skip" type="button">PULAR INTRODUÇÃO</button>
+</section>
+
+<!-- 2) CONVITE INTERATIVO -->
+<section id="screen-invite" class="screen">
+  <div class="stage">
+    <img src="interativo.jpg" alt="Convite de aniversário de 4 anos do Henrique – dia 11/12 às 15:00">
+    <a id="b-confirmar" class="hot" target="_blank" rel="noopener" aria-label="Confirme sua presença"
+       href="https://wa.me/5511951167969?text=Ol%C3%A1%2C%20quero%20confirmar%20presen%C3%A7a%20no%20anivers%C3%A1rio%20do%20Henrique.%20%0A%0ASeremos%3A%0A%0A(___)%20ADULTOS%20%0A(___)%20CRIAN%C3%87AS%20"></a>
+    <a id="b-local" class="hot" target="_blank" rel="noopener" aria-label="Localização"
+       href="https://maps.app.goo.gl/h11D43eChakwVsus7?g_st=aw"></a>
+    <a id="b-presente" class="hot" href="#" role="button" aria-label="Sugestão de presente"></a>
+    <a id="b-voltar-1" class="hot" href="#" role="button" aria-label="Voltar ao convite"></a>
+  </div>
+</section>
+
+<!-- 3) SUGESTÕES DE PRESENTE -->
+<section id="screen-gifts" class="screen">
+  <div class="stage presentes">
+    <img src="presentes.jpg" alt="Sugestões de presente: roupa tamanho 10, sapato nº 28, brinquedos">
+    <a id="b-voltar-2" class="hot" href="#" role="button" aria-label="Voltar ao convite"></a>
+  </div>
+</section>
+
+<div id="fx" aria-hidden="true"></div>
+
+<script>
+(function () {
+  var screens = {
+    video:  document.getElementById('screen-video'),
+    invite: document.getElementById('screen-invite'),
+    gifts:  document.getElementById('screen-gifts')
+  };
+  var video = document.getElementById('video');
+  var skip  = document.getElementById('skip');
+  var hint  = document.getElementById('hint');
+
+  function show(name) {
+    for (var k in screens) screens[k].classList.toggle('active', k === name);
+    if (name !== 'video') { try { video.pause(); } catch (e) {} }
+  }
+
+  function resetVideo() {
+    try { video.pause(); video.currentTime = 0.1; } catch (e) {}
+    skip.classList.remove('show');
+    hint.classList.remove('hide');
+  }
+
+  function goInvite() { show('invite'); }
+
+  /* ---- vídeo: qualquer toque na tela inicia ---- */
+  screens.video.addEventListener('click', function (e) {
+    if (e.target === skip) return;
+    if (video.paused && !video.ended) {
+      var p = video.play();
+      if (p && p.catch) p.catch(function () {});
+    }
+  });
+  video.addEventListener('play', function () {
+    hint.classList.add('hide');
+    skip.classList.add('show');
+  });
+  video.addEventListener('ended', goInvite);
+  video.addEventListener('error', goInvite);   // se o vídeo não carregar, segue para o convite
+  skip.addEventListener('click', function (e) { e.stopPropagation(); goInvite(); });
+
+  /* ---- navegação entre páginas ---- */
+  function bind(id, fn) {
+    document.getElementById(id).addEventListener('click', function (e) {
+      e.preventDefault(); fn();
+    });
+  }
+  bind('b-presente',  function () { show('gifts'); });
+  bind('b-voltar-1',  function () { resetVideo(); show('video'); });
+  bind('b-voltar-2',  function () { show('invite'); });
+
+  /* ---- efeito: anéis dourados + fumaça azul ---- */
+  var fx = document.getElementById('fx');
+  var rnd = function (a, b) { return a + Math.random() * (b - a); };
+
+  function burst(x, y) {
+    var i, el, a, d, size, dx, dy, dur, spin;
+
+    // fumaça azul
+    for (i = 0; i < 9; i++) {
+      el = document.createElement('div'); el.className = 'smoke';
+      size = rnd(70, 140);
+      el.style.cssText = 'width:' + size + 'px;height:' + size + 'px;left:' + (x - size / 2) + 'px;top:' + (y - size / 2) + 'px;';
+      fx.appendChild(el);
+      a = rnd(0, Math.PI * 2); d = rnd(20, 90);
+      dx = Math.cos(a) * d; dy = Math.sin(a) * d - rnd(30, 90);
+      dur = rnd(900, 1600);
+      el.animate([
+        { transform: 'translate(0,0) scale(.25)', opacity: 0 },
+        { opacity: .9, offset: .2 },
+        { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + rnd(1.6, 2.6) + ')', opacity: 0 }
+      ], { duration: dur, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'forwards' })
+        .onfinish = (function (n) { return function () { n.remove(); }; })(el);
+    }
+
+    // anéis dourados
+    for (i = 0; i < 16; i++) {
+      el = document.createElement('div'); el.className = 'ring';
+      size = rnd(24, 62);
+      el.style.cssText = 'width:' + size + 'px;height:' + size + 'px;left:' + (x - size / 2) + 'px;top:' + (y - size / 2) + 'px;';
+      fx.appendChild(el);
+      a = rnd(0, Math.PI * 2); d = rnd(60, 190);
+      dx = Math.cos(a) * d; dy = Math.sin(a) * d;
+      spin = (Math.random() < .5 ? -1 : 1) * rnd(360, 900);
+      dur = rnd(1000, 1700);
+      el.animate([
+        { transform: 'translate(0,0) rotateY(0deg) scale(.2)', opacity: 0 },
+        { opacity: 1, offset: .15 },
+        { transform: 'translate(' + dx * .7 + 'px,' + (dy * .7 - 40) + 'px) rotateY(' + spin * .6 + 'deg) scale(1)', opacity: 1, offset: .55 },
+        { transform: 'translate(' + dx + 'px,' + (dy + rnd(60, 140)) + 'px) rotateY(' + spin + 'deg) scale(.85)', opacity: 0 }
+      ], { duration: dur, easing: 'cubic-bezier(.2,.7,.4,1)', fill: 'forwards' })
+        .onfinish = (function (n) { return function () { n.remove(); }; })(el);
+    }
+
+    // brilhos
+    for (i = 0; i < 12; i++) {
+      el = document.createElement('div'); el.className = 'spark';
+      el.style.left = (x - 3) + 'px'; el.style.top = (y - 3) + 'px';
+      fx.appendChild(el);
+      a = rnd(0, Math.PI * 2); d = rnd(40, 160);
+      el.animate([
+        { transform: 'translate(0,0) scale(1)', opacity: 1 },
+        { transform: 'translate(' + Math.cos(a) * d + 'px,' + Math.sin(a) * d + 'px) scale(0)', opacity: 0 }
+      ], { duration: rnd(500, 1000), easing: 'ease-out', fill: 'forwards' })
+        .onfinish = (function (n) { return function () { n.remove(); }; })(el);
+    }
+  }
+
+  document.addEventListener('pointerdown', function (e) { burst(e.clientX, e.clientY); }, true);
+  document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+})();
+</script>
+</body>
+</html>
